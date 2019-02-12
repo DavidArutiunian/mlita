@@ -8,93 +8,108 @@ Visual Studio 2017
 */
 
 #include "pch.h"
+
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include "btree.h"
-#include <algorithm>
+#include <queue>
 
-std::string read(const std::string& path)
-{
-    std::ifstream infile(path);
-    if (!infile)
-    {
-        throw std::runtime_error("Cannot open the file " + path);
-    }
-    std::string line;
-    std::getline(infile, line);
-    return line;
-}
+// Чтение первой строки из файла
+std::string read(const std::string& path);
 
-std::vector<std::string> split(const std::string& s, const char delimiter)
-{
-    std::vector<std::string> tokens;
-    std::string token;
-    std::istringstream stream(s);
-    while (std::getline(stream, token, delimiter))
-    {
-        tokens.push_back(token);
-    }
-    return tokens;
-}
+// Разделение строки на вектор строк по символу разделителя
+std::vector<std::string> split(const std::string& s, const char delimiter);
 
-std::pair<int, int> to_params(const std::string& string)
-{
-    auto tokens = split(string, ' ');
-    return {std::stoi(tokens[0]), std::stoi(tokens[1])};
-}
+// Нормализация строки в параметры
+std::pair<int, int> to_params(const std::string& string);
 
+// Вывод сообщения в стандартный поток (файл)
 template <typename T>
-void write(T message, const std::string& path)
-{
-    std::ofstream outfile(path);
-    outfile << message;
-}
+void write(T message, const std::string& path);
 
-void split_wood(const int key, const std::unique_ptr<btree> & tree)
-{
-	if (key == 0)
-	{
-		return;
-	}
-
-
-	tree->insert(key);
-
-    const auto prev_left = key;
-    const auto left = key / 2;
-    const auto right = prev_left - std::max(left, 1);
-
-	split_wood(left, tree);
-	split_wood(right, tree);
-}
 
 int main()
 {
     try
     {
-        const std::unique_ptr<btree> tree(new btree);
-        auto result = 0;
         const auto input = read("input.txt");
         const auto params = to_params(input);
-		tree->insert(params.first);
-		tree->insert(params.first - params.second);
-		split_wood(params.second, tree);
-        const auto root = static_cast<node*>(tree->get_root());
-        btree::traverse(root, [&params, &result](node* node)
+		std::priority_queue<int, std::vector<int>, std::greater<>> queue;
+		std::vector<int> parts;
+        parts.reserve(params.second + 1);
+        for (auto i = 0; i < params.second; i++)
         {
-            if (node->value == params.first)
+			parts.push_back(1);
+			queue.push(1);
+        }
+		parts.push_back(params.first - params.second);
+		queue.push(params.first - params.second);
+        while (!queue.empty())
+        {
+            const auto left = queue.top();
+			queue.pop();
+            if (queue.empty())
             {
-                return;
+				break;
             }
-            result += node->value;
-        });
-        write(result, "output.txt");
+            const auto right = queue.top();
+			queue.pop();
+			queue.push(left + right);
+			parts.push_back(left + right);
+        }
+        auto sum = 0;
+        for (auto && part : parts)
+        {
+            if (part == params.first)
+            {
+				continue;
+            }
+			sum += part;
+        }
+		std::cout << sum << std::endl;;
+        write(sum, "output.txt");
     }
     catch (std::exception& ex)
     {
         std::cerr << ex.what() << std::endl;
     }
+}
+
+template <typename T>
+void write(T message, const std::string& path)
+{
+	std::ofstream outfile(path);
+	outfile << message;
+}
+
+std::pair<int, int> to_params(const std::string& string)
+{
+	auto tokens = split(string, ' ');
+	return { std::stoi(tokens[0]), std::stoi(tokens[1]) };
+}
+
+std::vector<std::string> split(const std::string& s, const char delimiter)
+{
+	std::vector<std::string> tokens;
+	std::string token;
+	std::istringstream stream(s);
+	while (std::getline(stream, token, delimiter))
+	{
+		tokens.push_back(token);
+	}
+	return tokens;
+}
+
+std::string read(const std::string& path)
+{
+	std::ifstream infile(path);
+	if (!infile)
+	{
+		throw std::runtime_error("Cannot open the file " + path);
+	}
+	std::string line;
+	std::getline(infile, line);
+	return line;
 }
