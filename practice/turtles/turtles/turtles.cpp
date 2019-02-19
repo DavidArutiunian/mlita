@@ -7,40 +7,28 @@
 
 constexpr int MAX = 200;
 
-void read(int** f, const char* path, std::pair<int, int>& dimensions);
+void read(int f[MAX][MAX], const char* path, std::pair<int, int>& dimensions);
 
 std::vector<std::string> split(const std::string& s, const char delimiter);
 
 template <typename T>
 void write(T message, const char* path);
 
-void* allocate_memory(const std::pair<int, int>& dimensions);
+int min(const int x, const int y);
 
-void* reallocate_memory(int** f, const std::pair<int, int>& dimensions);
-
-void free_memory(int** f, const std::pair<int, int>& dimensions);
-
-int min(int x, int y, int z);
-
-int min_cost(int** cost, int m, int n);
+void min_cost(int cost[MAX][MAX], int dynamics[MAX][MAX], int m, int n);
 
 int main()
 {
-    // Чтение исходных данных
     std::pair<int, int> dimensions;
-    auto f = static_cast<int **>(allocate_memory({MAX, MAX}));
-    read(f, "input.txt", dimensions);
-    f = static_cast<int **>(reallocate_memory(f, dimensions));
-
-    const auto cost = min_cost(f, dimensions.first - 1, dimensions.second - 1);
-
-    std::cout << cost << std::endl;
-
-    // Освобождение памяти
-    free_memory(f, dimensions);
+	int cost[MAX][MAX] = {0};
+	int dynamics[MAX][MAX] = {0};
+    read(cost, "input.txt", dimensions);
+    min_cost(cost, dynamics, dimensions.first, dimensions.second);
+    std::cout << dynamics[dimensions.first - 1][dimensions.second - 1] << std::endl;
 }
 
-void read(int** f, const char* path, std::pair<int, int>& dimensions)
+void read(int f[MAX][MAX], const char* path, std::pair<int, int>& dimensions)
 {
     std::ifstream infile(path);
     if (!infile)
@@ -83,53 +71,30 @@ void write(T message, const char* path)
     outfile << message;
 }
 
-void* allocate_memory(const std::pair<int, int>& dimensions)
-{
-    const auto f = static_cast<int **>(calloc(MAX, sizeof(int *)));
-    for (auto i = 0; i < MAX; i++)
-    {
-        f[i] = static_cast<int *>(calloc(MAX, sizeof(int)));
-    }
-    return f;
-}
-
-void* reallocate_memory(int** f, const std::pair<int, int>& dimensions)
-{
-    const auto m = static_cast<int **>(realloc(f, dimensions.first * sizeof(int *)));
-    for (auto i = 0; i < dimensions.first; i++)
-    {
-        m[i] = static_cast<int *>(realloc(f[i], dimensions.second * sizeof(int)));
-    }
-    return m;
-}
-
-void free_memory(int** f, const std::pair<int, int>& dimensions)
-{
-    for (auto i = 0; i < dimensions.first; i++)
-    {
-        free(f[i]);
-    }
-    free(f);
-}
-
-int min(int x, int y, int z)
+int min(const int x, const int y)
 {
     if (x < y)
-        return (x < z) ? x : z;
-    else
-        return (y < z) ? y : z;
+    {
+		return x;
+    }
+	return y;
 }
 
-int min_cost(int** cost, int m, int n)
+void min_cost(int cost[MAX][MAX], int dynamics[MAX][MAX], const int m, const int n)
 {
     if (n < 0 || m < 0)
-        return std::numeric_limits<int>::min();
-    else if (m == 0 && n == 0)
-        return cost[m][n];
-    else
-        return cost[m][n] + min(
-            min_cost(cost, m - 1, n - 1),
-            min_cost(cost, m - 1, n),
-            min_cost(cost, m, n - 1)
-        );
+    {
+		return;;
+    }
+    if (m == 0 && n == 0) 
+	{
+		return;
+    }
+    for (auto i = 0; i < m; i++)
+    {
+        for (auto j = 0; j < n; j++)
+        {
+			dynamics[i][j] = min(i ? dynamics[i-1][j] : 0, j ? dynamics[i][j - 1] : 0) + cost[i][j];
+        }
+    }
 }
