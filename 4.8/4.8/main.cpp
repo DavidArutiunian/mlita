@@ -128,12 +128,10 @@ int main()
 			buffer[i] = results[i][j];
 			j = methods[i][j];
         }
-		array buffer_sliced(buffer.begin() + 1, buffer.begin() + N + 1);
-		std::reverse(buffer_sliced.begin(), buffer_sliced.end());
         std::string message;
-        for (auto i = 0; i <= N - 1; ++i)
+        for (auto i = 1; i <= N; ++i)
         {
-			message += std::to_string(buffer_sliced[i]);
+			message += std::to_string(buffer[i]);
         }
 		write(message, "output.txt");
     } catch (std::exception &ex)
