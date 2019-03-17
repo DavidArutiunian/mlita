@@ -24,19 +24,16 @@ Visual Studio 2017
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <fstream>
 
 struct rectangle
 {
-    double x1;
-    double y1;
-    double x2;
-    double y2;
+    double x1, y1, x2, y2;
 };
 
 struct segment
 {
-    double a;
-    double b;
+    double a, b;
 };
 
 std::istream& operator>>(std::istream& in, rectangle& rect)
@@ -49,13 +46,15 @@ int main()
 {
     try
     {
+		std::ifstream input("input.txt");
+		std::ofstream output("output.txt");
         int count;
-        std::cin >> count;
+        input >> count;
         std::vector<rectangle> rects;
         while (count-- > 0)
         {
             rects.push_back(rectangle{});
-            std::cin >> rects.back();
+            input >> rects.back();
         }
 
         std::vector<double> x_events;
@@ -77,16 +76,8 @@ int main()
             {
                 if (rect.x1 <= x && rect.x2 > x)
                 {
-                    if (rect.y1 < rect.y2)
-                    {
-                        start.push_back(rect.y1);
-                        end.push_back(rect.y2);
-                    }
-                    else
-                    {
-                        start.push_back(rect.y2);
-                        end.push_back(rect.y1);
-                    }
+                    start.push_back(std::min(rect.y1, rect.y2));
+                    end.push_back(std::max(rect.y1, rect.y2));
                 }
             }
             std::sort(start.begin(), start.end());
@@ -128,7 +119,7 @@ int main()
                 area += width * (segment.b - segment.a);
             }
         }
-        std::cout << area << std::endl;
+        output << area << std::endl;
     }
     catch (std::exception& ex)
     {
