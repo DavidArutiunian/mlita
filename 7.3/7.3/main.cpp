@@ -28,12 +28,12 @@ Visual Studio 2017
 
 struct rectangle
 {
-    double x1, y1, x2, y2;
+    long long x1, y1, x2, y2;
 };
 
 struct segment
 {
-    double a, b;
+    long long a, b;
 };
 
 std::istream& operator>>(std::istream& in, rectangle& rect)
@@ -57,7 +57,7 @@ int main()
             input >> rects.back();
         }
 
-        std::vector<double> x_events;
+        std::vector<long long> x_events;
         for (auto& rect : rects)
         {
             x_events.push_back(rect.x1);
@@ -67,11 +67,11 @@ int main()
         const auto it = std::unique(x_events.begin(), x_events.end());
         x_events.resize(std::distance(x_events.begin(), it));
 
-        double area = 0;
+        long long area = 0;
         for (std::size_t i = 0; i < x_events.size() - 1; ++i)
         {
             const auto x = x_events[i];
-            std::deque<double> start, end;
+            std::deque<long long> start, end;
             for (auto& rect : rects)
             {
                 if (rect.x1 <= x && rect.x2 > x)
@@ -88,7 +88,7 @@ int main()
             std::vector<segment> segments;
             while (!start.empty() || !end.empty())
             {
-                double y = 0;
+                long long y = 0;
                 const auto pre_depth = depth;
                 if (!start.empty() && start.front() <= end.front())
                 {
