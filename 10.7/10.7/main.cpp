@@ -9,7 +9,7 @@ Visual Studio 2017
 
 #include "pch.h"
 
-#define DEBUG false
+#define DEBUG true
 
 using t_number = long long;
 using t_prices = std::vector<t_number>;
@@ -44,10 +44,11 @@ int main()
         t_prices prices{};
         t_discs discs{};
         read(balance, prices);
-        const t_prices initial_prices(prices);
+        const auto initial_prices(prices);
         std::sort(prices.begin(), prices.end());
         process(balance, prices, discs);
         write(balance, restore_initial_sort(initial_prices, discs));
+        
     }
     catch (const std::exception& ex)
     {
@@ -57,49 +58,29 @@ int main()
 
 void process(t_number& balance, t_prices& prices, t_discs& discs)
 {
-    const auto min_price = *std::min_element(prices.begin(), prices.end());
-    const auto initial_balance = balance;
-    if (balance % min_price == 0)
-    {
-        discs[min_price] = initial_balance / min_price;
-    }
+    const auto min_price = prices.front();
+	const auto initial_balance = balance;
     for (auto i = initial_balance / min_price; i > 0; --i)
     {
-        t_number second_price = 0;
-        while (initial_balance - min_price * i >= second_price * prices[second])
+        const auto most = min_price * i;
+        const auto rest_second = initial_balance - most;
+		auto without_min(prices);
+		without_min.erase(std::find(without_min.begin(), without_min.end(), min_price));
+		auto second_min = without_min.front();
+        const auto second_most = rest_second / second_min;
+        const auto rest_third = rest_second - second_most * second_min;
+		auto without_second_min(without_min);
+		without_second_min.erase(std::find(without_second_min.begin(), without_second_min.end(), second_min));
+        const auto third_min = without_second_min.front();
+        const auto third_most = rest_third / third_min;
+		auto discs_copy(discs);
+		set_discs({ i, second_most, third_most }, prices, discs_copy);
+        if (rest_third < balance && get_sum_of_discs(discs_copy) >= get_sum_of_discs(discs))
         {
-            t_number third_price = 0;
-            const auto local_second = initial_balance - min_price * i - second_price * prices[second];
-            if (local_second >= 0 && local_second < balance)
-            {
-                balance = local_second;
-                set_discs({i, second_price, third_price}, prices, discs);
-            }
-            while (local_second >= (third_price * prices[third]))
-            {
-                const auto local_third = initial_balance - min_price * i - second_price * prices[second] - third_price * prices[third];
-                if (local_third >= 0 && local_third < balance)
-                {
-                    balance = local_third;
-                    set_discs({i, second_price, third_price}, prices, discs);
-                }
-                ++third_price;
-                if (balance == 0)
-                {
-                    return;
-                }
-            }
-            ++second_price;
-            if (balance == 0)
-            {
-                return;
-            }
+			balance = rest_third;
+			discs = discs_copy;
         }
-        if (balance == 0)
-        {
-            return;
-        }
-    }
+    } 
 }
 
 void read(t_number& balance, t_prices& prices)
