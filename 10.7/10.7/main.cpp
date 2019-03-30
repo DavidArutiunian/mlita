@@ -9,11 +9,12 @@ Visual Studio 2017
 
 #include "pch.h"
 
-#define DEBUG true
+#define DEBUG false
 
 using t_number = long long;
 using t_prices = std::vector<t_number>;
-using t_discs = std::unordered_map<t_number, t_number>;
+using t_disc = std::vector <t_number>;
+using t_discs = std::vector<t_disc>;
 
 const std::size_t PRICE_LINE_COUNT = 3;
 
@@ -27,13 +28,19 @@ inline t_number get_sum_of_discs(t_discs const& discs);
 
 inline void set_discs(std::vector<t_number> const& actual_prices, t_prices const& prices, t_discs& discs);
 
-inline t_discs restore_initial_sort(t_prices const& prices, t_discs& discs);
+inline t_discs restore_initial_sort(t_prices const& initial_prices, t_discs const& discs);
 
 enum position
 {
     first = 0,
     second,
     third
+};
+
+enum disc
+{
+	position = 0,
+	price
 };
 
 int main()
@@ -58,29 +65,24 @@ int main()
 
 void process(t_number& balance, t_prices& prices, t_discs& discs)
 {
-    const auto min_price = prices.front();
-	const auto initial_balance = balance;
-    for (auto i = initial_balance / min_price; i > 0; --i)
+    for (std::size_t i = 0; i < prices.size() - 1; ++i)
     {
-        const auto most = min_price * i;
-        const auto rest_second = initial_balance - most;
-		auto without_min(prices);
-		without_min.erase(std::find(without_min.begin(), without_min.end(), min_price));
-		auto second_min = without_min.front();
-        const auto second_most = rest_second / second_min;
-        const auto rest_third = rest_second - second_most * second_min;
-		auto without_second_min(without_min);
-		without_second_min.erase(std::find(without_second_min.begin(), without_second_min.end(), second_min));
-        const auto third_min = without_second_min.front();
-        const auto third_most = rest_third / third_min;
-		auto discs_copy(discs);
-		set_discs({ i, second_most, third_most }, prices, discs_copy);
-        if (rest_third < balance && get_sum_of_discs(discs_copy) >= get_sum_of_discs(discs))
+		const auto all = balance / prices[i];
+		const auto div = (prices[i + 1] - prices[i]);
+        if (div == 0)
         {
-			balance = rest_third;
-			discs = discs_copy;
+			continue;
         }
-    } 
+		const auto first = (balance - all * prices[i]) / div;
+		const auto second = all - first;
+        if (all == 0 && first == 0 && second == 0)
+        {
+			continue;
+        }
+		const auto third = all - (second + first);
+		balance = balance - (second * prices[i] + first * prices[i + 1]);
+		set_discs({ second, first, third }, prices, discs);
+    }
 }
 
 void read(t_number& balance, t_prices& prices)
@@ -109,10 +111,10 @@ void write(const t_number balance, t_discs const& discs)
     }
     for (auto&& disc : discs)
     {
-        output << disc.second << ' ';
+        output << disc[price] << ' ';
         if (DEBUG)
         {
-            std::cout << disc.second << ' ';
+            std::cout << disc[price] << ' ';
         }
     }
     output << std::endl;
@@ -127,23 +129,39 @@ t_number get_sum_of_discs(t_discs const& discs)
     t_number sum = 0;
     for (auto&& disc : discs)
     {
-        sum += disc.second;
+        sum += disc[price];
     }
     return sum;
 }
 
 void set_discs(std::vector<t_number> const& actual_prices, t_prices const& prices, t_discs& discs)
 {
-    discs[prices[first]] = actual_prices[first];
-    discs[prices[second]] = actual_prices[second];
-    discs[prices[third]] = actual_prices[third];
+	discs.clear();
+	discs.push_back({ prices[first], actual_prices[first] });
+	discs.push_back({ prices[second], actual_prices[second] });
+	discs.push_back({ prices[third], actual_prices[third] });
 }
 
-t_discs restore_initial_sort(t_prices const& prices, t_discs& discs)
+t_discs restore_initial_sort(t_prices const& initial_prices, t_discs const& discs)
 {
-    t_discs buffer{};
-    buffer[prices[first]] = discs[prices[first]];
-    buffer[prices[second]] = discs[prices[second]];
-    buffer[prices[third]] = discs[prices[third]];
-    return buffer;
+    t_discs discs_initial_sort{};
+    auto discs_copy(discs);
+    for (std::size_t i = 0; i < discs_copy.size(); ++i)
+    {
+        if (initial_prices[i] == discs_copy[i][position])
+        {
+			discs_initial_sort.push_back(discs_copy[i]);
+        } else
+        {
+            for (auto j = i; j < discs_copy.size(); ++j)
+            {
+                if (initial_prices[i] == discs_copy[j][position])
+                {
+					discs_initial_sort.push_back(discs_copy[j]);
+					std::swap(discs_copy[j], discs_copy[j - 1]);
+                }
+            }
+        }
+    }
+    return discs_initial_sort;
 }
