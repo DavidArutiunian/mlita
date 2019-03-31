@@ -65,23 +65,41 @@ int main()
 
 void process(t_number& balance, t_prices& prices, t_discs& discs)
 {
+	const auto initial_balance = balance;
+	auto last_balance = balance;
     for (std::size_t i = 0; i < prices.size() - 1; ++i)
     {
-		const auto all = balance / prices[i];
+		const auto all = initial_balance / prices[i];
 		const auto div = (prices[i + 1] - prices[i]);
         if (div == 0)
         {
 			continue;
         }
-		const auto first = (balance - all * prices[i]) / div;
-		const auto second = all - first;
-        if (all == 0 && first == 0 && second == 0)
+		const auto second = (initial_balance - all * prices[i]) / div;
+		const auto first = all - second;
+        if (all == 0 && second == 0 && first == 0)
         {
 			continue;
         }
-		const auto third = all - (second + first);
-		balance = balance - (second * prices[i] + first * prices[i + 1]);
-		set_discs({ second, first, third }, prices, discs);
+		const auto third = all - (first + second);
+		last_balance = initial_balance - (first * prices[i] + second * prices[i + 1]);
+        if (last_balance < balance)
+        {
+			balance = last_balance;
+			set_discs({ first, second, third }, prices, discs);
+        }
+    }
+    for (auto i = 2; i < discs[second][price]; ++i)
+    {
+        const auto first = discs[position::first][price] + i - 1;
+        const auto second = discs[position::second][price] - i;
+        const auto third = discs[position::third][price] + i - (i - 1);
+		last_balance = initial_balance - first * prices[position::first] - second * prices[position::second] - third * prices[position::third];
+        if (last_balance < balance && last_balance >= 0)
+        {
+			balance = last_balance;
+			set_discs({ first, second, third }, prices, discs);
+        }
     }
 }
 
@@ -144,24 +162,16 @@ void set_discs(std::vector<t_number> const& actual_prices, t_prices const& price
 
 t_discs restore_initial_sort(t_prices const& initial_prices, t_discs const& discs)
 {
-    t_discs discs_initial_sort{};
     auto discs_copy(discs);
     for (std::size_t i = 0; i < discs_copy.size(); ++i)
     {
-        if (initial_prices[i] == discs_copy[i][position])
-        {
-			discs_initial_sort.push_back(discs_copy[i]);
-        } else
-        {
-            for (auto j = i; j < discs_copy.size(); ++j)
-            {
-                if (initial_prices[i] == discs_copy[j][position])
-                {
-					discs_initial_sort.push_back(discs_copy[j]);
-					std::swap(discs_copy[j], discs_copy[j - 1]);
-                }
-            }
-        }
+		for (auto j = i; j < discs_copy.size() - 1; ++j)
+		{
+			if (initial_prices[i] != discs_copy[j][position])
+			{
+				std::swap(discs_copy[j], discs_copy[j + 1]);
+			}
+		}
     }
-    return discs_initial_sort;
+    return discs_copy;
 }
