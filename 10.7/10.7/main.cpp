@@ -67,21 +67,27 @@ void process(t_number& balance, t_prices& prices, t_discs& discs)
 {
 	const auto initial_balance = balance;
 	auto last_balance = balance;
+	auto last_total = 0;
     for (std::size_t i = 0; i < prices.size() - 1; ++i)
     {
-		const auto all = initial_balance / prices[i];
+		const auto total = initial_balance / prices[i];
+        if (total < last_total)
+        {
+			continue;
+        }
+		last_total = total;
 		const auto div = (prices[i + 1] - prices[i]);
         if (div == 0)
         {
 			continue;
         }
-		const auto second = (initial_balance - all * prices[i]) / div;
-		const auto first = all - second;
-        if (all == 0 && second == 0 && first == 0)
+		const auto second = (initial_balance - total * prices[i]) / div;
+		const auto first = total - second;
+        if (total == 0 && second == 0 && first == 0)
         {
 			continue;
         }
-		const auto third = all - (first + second);
+		const auto third = total - (first + second);
 		last_balance = initial_balance - (first * prices[i] + second * prices[i + 1]);
         if (last_balance < balance)
         {
@@ -89,7 +95,7 @@ void process(t_number& balance, t_prices& prices, t_discs& discs)
 			set_discs({ first, second, third }, prices, discs);
         }
     }
-    for (auto i = 2; i < discs[second][price]; ++i)
+    for (auto i = 0; i < discs[second][price]; ++i)
     {
         const auto first = discs[position::first][price] + i - 1;
         const auto second = discs[position::second][price] - i;
