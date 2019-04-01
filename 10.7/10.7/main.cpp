@@ -9,7 +9,7 @@ Visual Studio 2017
 
 #include "pch.h"
 
-#define DEBUG false
+#define DEBUG true
 
 using t_number = long long;
 using t_prices = std::vector<t_number>;
@@ -67,7 +67,7 @@ void process(t_number& balance, t_prices& prices, t_discs& discs)
 {
 	const auto initial_balance = balance;
 	auto last_balance = balance;
-	auto last_total = 0;
+	t_number last_total = 0;
     for (std::size_t i = 0; i < prices.size() - 1; ++i)
     {
 		const auto total = initial_balance / prices[i];
@@ -89,23 +89,35 @@ void process(t_number& balance, t_prices& prices, t_discs& discs)
         }
 		const auto third = total - (first + second);
 		last_balance = initial_balance - (first * prices[i] + second * prices[i + 1]);
-        if (last_balance < balance)
-        {
+		if (last_balance < balance)
+		{
 			balance = last_balance;
 			set_discs({ first, second, third }, prices, discs);
-        }
-    }
-    for (auto i = 0; i < discs[second][price]; ++i)
-    {
-        const auto first = discs[position::first][price] + i - 1;
-        const auto second = discs[position::second][price] - i;
-        const auto third = discs[position::third][price] + i - (i - 1);
-		last_balance = initial_balance - first * prices[position::first] - second * prices[position::second] - third * prices[position::third];
-        if (last_balance < balance && last_balance >= 0)
-        {
-			balance = last_balance;
-			set_discs({ first, second, third }, prices, discs);
-        }
+		}
+		for (auto j = 0; j < total - first; ++j)
+		{
+			const auto next_first = first + j - 1;
+			const auto next_second = second - j;
+			const auto next_third = third + j - (j - 1);
+			last_balance = initial_balance - next_first * prices[position::first] - next_second * prices[position::second] - next_third * prices[position::third];
+			if (last_balance < balance && last_balance >= 0)
+			{
+				balance = last_balance;
+				set_discs({ next_first , next_second, next_third }, prices, discs);
+			}
+		}
+		for (auto j = 0; j < total - first; ++j)
+		{
+			const auto next_first = first + j - 1;
+			const auto next_second = third + j - (j - 1);
+			const auto next_third = second - j;
+			last_balance = initial_balance - next_first * prices[position::first] - next_second * prices[position::second] - next_third * prices[position::third];
+			if (last_balance < balance && last_balance >= 0)
+			{
+				balance = last_balance;
+				set_discs({ next_first , next_second, next_third }, prices, discs);
+			}
+		}
     }
 }
 
