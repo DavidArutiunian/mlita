@@ -83,7 +83,7 @@ void process(t_number& balance, t_prices& prices, t_discs& discs)
             continue;
         }
         const auto second = (initial_balance - total * prices[i]) / div;
-        const auto first = total - second;
+        auto first = total - second;
         if (total == 0 && second == 0 && first == 0)
         {
             continue;
@@ -94,6 +94,11 @@ void process(t_number& balance, t_prices& prices, t_discs& discs)
         {
             balance = last_balance;
             set_discs({first, second, third}, prices, discs);
+        }
+        if (second > first)
+        {
+			first = 0;
+			balance = initial_balance;
         }
         for (auto j = 0; j < total - first; ++j)
         {
