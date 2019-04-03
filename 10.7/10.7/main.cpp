@@ -9,7 +9,7 @@ Visual Studio 2017
 
 #include "pch.h"
 
-#define DEBUG false
+#define DEBUG true
 
 using t_number = long long;
 using t_prices = std::vector<t_number>;
@@ -76,11 +76,18 @@ void process(t_number& balance, t_prices& prices, t_discs& discs)
         {
             continue;
         }
+        if (total == 0)
+        {
+			set_discs({ 0, 0, 0 }, prices, discs);
+			continue;
+        }
         last_total = total;
         const auto div = (prices[i + 1] - prices[i]);
         if (div == 0)
         {
-            continue;
+            balance = get_rest_balance(initial_balance, prices, {total, 0, 0});
+            set_discs({total, 0, 0}, prices, discs);
+			continue;
         }
         const auto second = (initial_balance - total * prices[i]) / div;
         auto first = total - second;
@@ -97,8 +104,8 @@ void process(t_number& balance, t_prices& prices, t_discs& discs)
         }
         if (second > first)
         {
-			first = 0;
-			balance = initial_balance;
+            first = 0;
+            balance = initial_balance;
         }
         for (auto j = 0; j < total - first; ++j)
         {
