@@ -15,7 +15,7 @@ Visual Studio 2019
 #include <algorithm>
 #include <functional>
 
-#define DEBUG true
+#define DEBUG false
 
 using number_t = int;
 using table_t = std::vector<std::vector<number_t>>;
@@ -61,6 +61,8 @@ bool find_position(matrix& main_m, matrix& top_m, matrix& left_m, number_t curre
 
 void traverse(size_t size, std::function<void(size_t, size_t)> const& callback, std::function<void()> const& on_next = nullptr);
 
+bool check_matrices(matrix& top_m, matrix& left_m);
+
 void for_each_rest(size_t size, size_t x, std::function<void(size_t)> const& callback);
 
 int main()
@@ -79,13 +81,21 @@ int main()
 
         bool error = false;
 
-        for (size_t i = 0; i <= size * size; ++i)
+        if (!check_matrices(top, left))
         {
-            auto current = static_cast<number_t>(i);
-            if (!find_position(main, top, left, current))
+            error = true;
+        }
+
+        if (!error)
+        {
+            for (size_t i = 0; i <= size * size; ++i)
             {
-                error = true;
-                break;
+                auto current = static_cast<number_t>(i);
+                if (!find_position(main, top, left, current))
+                {
+                    error = true;
+                    break;
+                }
             }
         }
 
@@ -281,4 +291,20 @@ void for_each_rest(size_t size, size_t x, std::function<void(size_t)> const& cal
     {
         callback(k);
     }
+}
+
+bool check_matrices(matrix& top_m, matrix& left_m)
+{
+    auto result = true;
+    const auto callback = [&](size_t i, size_t j)
+    {
+        const auto top_more_i = static_cast<size_t>(top_m[i][j]) > i;
+        const auto left_more_j = static_cast<size_t>(left_m[i][j]) > j;
+        if (top_more_i || left_more_j)
+        {
+            result = false;
+        }
+    };
+    traverse(top_m.m_size, callback);
+    return result;
 }
