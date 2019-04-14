@@ -17,19 +17,19 @@ Visual Studio 2019
 using number_t = int;
 using table_t = std::vector<std::vector<number_t>>;
 
-struct matrix_m
+struct matrix
 {
     size_t m_size;
     table_t m_data;
 
-    matrix_m(size_t size);
+    matrix(size_t size);
 
     std::vector<number_t>& operator[](size_t index);
 };
 
-std::istream& operator>>(std::istream& in, matrix_m& matrix);
+std::istream& operator>>(std::istream& in, matrix& matrix);
 
-std::ostream& operator<<(std::ostream& out, matrix_m& matrix);
+std::ostream& operator<<(std::ostream& out, matrix& matrix);
 
 int main()
 {
@@ -39,11 +39,11 @@ int main()
         std::ofstream output("output.txt");
         size_t size = 0;
         input >> size;
-        matrix_m top_m(size);
+        matrix top_m(size);
         input >> top_m;
-        matrix_m left_m(size);
+        matrix left_m(size);
         input >> left_m;
-        matrix_m main_m(size);
+        matrix main_m(size);
 
         bool error = false;
 
@@ -183,17 +183,17 @@ int main()
     }
 }
 
-matrix_m::matrix_m(size_t size): m_size(size)
+matrix::matrix(size_t size): m_size(size)
 {
     m_data = table_t(size, std::vector<number_t>(size, 0));
 }
 
-std::vector<number_t>& matrix_m::operator[](size_t index)
+std::vector<number_t>& matrix::operator[](size_t index)
 {
     return m_data[index];
 }
 
-std::istream& operator>>(std::istream& in, matrix_m& matrix)
+std::istream& operator>>(std::istream& in, matrix& matrix)
 {
     for (size_t i = 0; i < matrix.m_size; ++i)
     {
@@ -205,7 +205,7 @@ std::istream& operator>>(std::istream& in, matrix_m& matrix)
     return in;
 }
 
-std::ostream& operator<<(std::ostream& out, matrix_m& matrix)
+std::ostream& operator<<(std::ostream& out, matrix& matrix)
 {
     for (size_t i = 0; i < matrix.m_size; ++i)
     {
