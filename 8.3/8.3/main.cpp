@@ -122,6 +122,7 @@ int main()
                         const auto is_free_positive = free > 0;
                         const auto is_free_more_left = free > left_m[j][m];
                         flag = is_left_zero_on_i && is_free_positive || is_free_more_left ? false : flag;
+                        if (flag)
                         {
                             for (auto k = m; k < main_m.m_size; ++k)
                             {
