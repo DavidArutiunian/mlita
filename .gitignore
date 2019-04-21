@@ -1,6 +1,7 @@
 
 input*.txt
 output*.txt
+correct*.txt
 
 # Created by https://www.gitignore.io/api/macos,linux,windows,visualstudio
 # Edit at https://www.gitignore.io/?templates=macos,linux,windows,visualstudio
