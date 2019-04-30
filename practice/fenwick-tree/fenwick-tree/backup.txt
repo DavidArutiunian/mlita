@@ -1,0 +1,140 @@
+#include <fstream>
+#include <iostream>
+#include <vector>
+
+#define DEBUG true
+
+using number_t = int;
+using array_t = std::vector<number_t>;
+using tree_t = array_t;
+
+void update(tree_t& tree, number_t index, number_t value);
+
+void print(tree_t const& tree);
+
+tree_t construct(array_t& array);
+
+number_t sum(number_t from, tree_t& tree);
+
+number_t rsq(number_t from, number_t to, tree_t& tree);
+
+number_t rsq(number_t from, number_t to, tree_t& tree);
+
+void add(number_t index, number_t value, tree_t& tree);
+
+int main()
+{
+    std::ifstream input("input.txt");
+    std::ofstream output("output.txt");
+
+    size_t size = 0;
+    input >> size;
+
+    array_t array{};
+    number_t x = 0;
+    while (input >> x)
+    {
+        array.push_back(x);
+    }
+
+    tree_t tree = construct(array);
+
+    std::string token = "";
+
+    while (token != "exit")
+    {
+        std::cout << ">> ";
+        std::cin >> token;
+        if (token == "add")
+        {
+            std::cout << "add >> ";
+            number_t x, y;
+            std::cin >> x >> y;
+            add(x, y, tree);
+        }
+        else if (token == "rsq")
+        {
+            std::cout << "rsq >> ";
+            number_t x, y;
+            std::cin >> x >> y;
+            std::cout << rsq(x, y, tree) << std::endl;
+        }
+        else if (token == "update")
+        {
+            std::cout << "update >> ";
+            number_t x, y;
+            std::cin >> x >> y;
+            update(tree, x, y);
+        }
+        else if (token == "print")
+        {
+            print(tree);
+        }
+        else if (token == "clear")
+        {
+            system("cls");
+        }
+    }
+}
+
+void update(tree_t& tree, number_t index, number_t value)
+{
+    index = index + 1;
+    while (index <= tree.size() - 1)
+    {
+        tree[index] += value;
+        index += index & (-index);
+    }
+}
+
+void print(tree_t const& tree)
+{
+    for (const auto item : tree)
+    {
+        std::cout << item << ' ';
+    }
+    std::cout << std::endl;
+}
+
+tree_t construct(array_t& array)
+{
+    tree_t tree(array.size(), 0);
+    for (auto i = 0; i < array.size() - 1; i++)
+    {
+        update(tree, i, array[i]);
+    }
+    return tree;
+}
+
+number_t sum(number_t from, tree_t& tree)
+{
+    number_t result = 0;
+    for (number_t i = from; i >= 0; i = (i & (i + 1)) - 1)
+    {
+        result += tree[i];
+    }
+    return result;
+}
+
+number_t rsq(number_t i, tree_t &tree)
+{
+    number_t result = 0;
+    while (i >= 0)
+    {
+        result += tree[i];
+        i = (i & (i + 1)) - 1;
+    }
+    return result;
+}
+
+number_t rsq(number_t from, number_t to, tree_t &tree) {
+    return rsq(to, tree) - rsq(from - 1, tree);
+}
+
+void add(number_t index, number_t value, tree_t& tree)
+{
+    for (number_t i = index; i < tree.size(); i = (i | (i + 1)))
+    {
+        tree[i] += value;
+    }
+}
