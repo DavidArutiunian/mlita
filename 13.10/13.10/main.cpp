@@ -87,7 +87,8 @@ int main()
     {
         j = k;
         index_found = false;
-        while (dict[j] < samples[i].value)
+        bool out_of_bounds = j >= dict.size() - 1;
+        while (!out_of_bounds && dict[j] < samples[i].value)
         {
             ++j;
             if (j == dict.size())
