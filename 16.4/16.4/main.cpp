@@ -28,7 +28,7 @@ Visual Studio 2019
 
 #define DEBUG true
 
-using number_t = int;
+using number_t = long long;
 using array_t = std::vector<number_t>;
 using tree_t = array_t;
 using adds_t = array_t;
@@ -95,7 +95,7 @@ private:
     }
 };
 
-number_t main()
+int main()
 {
     std::ifstream input("input.txt");
     std::ofstream output("output.txt");
